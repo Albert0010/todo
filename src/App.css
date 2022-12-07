@@ -171,6 +171,7 @@
     position: absolute;
     right: 10px;
     margin-right: 5px;
+    cursor: pointer;
 }
 
 .disabledFocus {
@@ -185,6 +186,10 @@
     font-size: 12px;
     line-height: 18px;
     text-align: start;
+    width: 100%;
+}
+
+form {
     width: 100%;
 }
 

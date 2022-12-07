@@ -1,14 +1,15 @@
 import {createSlice} from "@reduxjs/toolkit";
 import {PayloadAction} from "@reduxjs/toolkit";
+import {validation} from "../../validation";
 
 export type TtodoType = {
     id:string;
     title:string;
     isChecked:boolean;
-    isDeleted:boolean;
+    isHidden:boolean;
 }
 
-const localStorageResponse = localStorage.getItem('todos'); //null || state
+const localStorageResponse = localStorage.getItem('todos');
 let todos = localStorageResponse && JSON.parse(localStorageResponse);
 
 
@@ -16,6 +17,7 @@ let todos = localStorageResponse && JSON.parse(localStorageResponse);
 
 const initialState:TtodoType[] = typeof localStorageResponse === 'object' ? [] : todos;
 
+console.log(initialState,'slice');
 
 
 
@@ -25,30 +27,42 @@ const todoSlice = createSlice({
     initialState,
     reducers:{
         add:(state, action:PayloadAction<TtodoType>)=>{
-            state[state.length] = action.payload;
-            localStorage.setItem("todos",JSON.stringify(state))
+            if(validation(action.payload.title)){
+                state[state.length] = action.payload;
+            }
         },
         _delete:(state, action:PayloadAction<{id:string}>)=>{
             const {id} = action.payload;
-            state  = state.map((t)=>{
-                if(t.id === id){
-                    t.isDeleted = true;
-                }
-                return t;
-            })
-            state = state.filter((t)=>!t.isDeleted);
+            return state.filter(t=>t.id !== id);
         },
-        check:(state,action:PayloadAction<{id:string}>)=>{
-            const {id} = action.payload;
+        check:(state,action:PayloadAction<{id:string,isHiddenClick:boolean}>)=>{
+            const {id,isHiddenClick} = action.payload;
             const index = state.findIndex(t=>t.id === id);
             state[index].isChecked = !state[index].isChecked;
-            localStorage.setItem("todos",JSON.stringify(state))
-
+            state.forEach((t)=>{
+                if(isHiddenClick && t.isChecked){
+                    t.isHidden = true;
+                }
+            })
         },
+        hide:(state)=>{
+            state.forEach((t)=>{
+                if(t.isChecked){
+                    t.isHidden = true
+                }
+            })
+        },
+        show:(state)=>{
+            state.forEach((t)=>{
+                if(t.isHidden){
+                    t.isHidden = false
+                }
+            })
+        }
     }
 })
 
-export const {_delete,add,check} = todoSlice.actions;
+export const {_delete,add,check,hide,show} = todoSlice.actions;
 
 
 export default todoSlice.reducer;
